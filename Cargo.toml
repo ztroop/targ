@@ -1,0 +1,11 @@
+[package]
+name = "targ"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ratatui = "0.26"
+crossterm = "0.22"
+tar = "0.4"
+flate2 = "1.0"
+chrono = "0.4"
