@@ -10,7 +10,10 @@ use ratatui::widgets::{Cell, Row};
 use tar::Archive;
 
 /// Read the contents of a tar file and return a vector of rows.
-pub fn read_tar_contents<P: AsRef<Path>>(tar_path: P) -> io::Result<Vec<Row<'static>>> {
+pub fn read_tar_contents<P: AsRef<Path>>(
+    tar_path: P,
+    show_indicator: bool,
+) -> io::Result<Vec<Row<'static>>> {
     let file = File::open(tar_path.as_ref())?;
     let buf_reader = BufReader::new(file);
 
@@ -26,6 +29,18 @@ pub fn read_tar_contents<P: AsRef<Path>>(tar_path: P) -> io::Result<Vec<Row<'sta
 
     for entry in archive.entries()? {
         let entry = entry?;
+
+        // Skip indicator files if they are not requested
+        if !show_indicator
+            && entry
+                .path()?
+                .file_name()
+                .and_then(|s| s.to_str())
+                .map_or(false, |s| s.starts_with("._"))
+        {
+            continue;
+        }
+
         let path = entry.path()?.to_path_buf();
         let size = entry.header().size()?;
 

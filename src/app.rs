@@ -2,6 +2,8 @@ use std::error;
 
 use ratatui::widgets::{Row, TableState};
 
+use crate::{structs::Args, tar::read_tar_contents};
+
 pub struct App {
     pub running: bool,
     pub tar_contents: Vec<Row<'static>>,
@@ -10,10 +12,10 @@ pub struct App {
 
 impl App {
     /// Create a new App with the given tar contents.
-    pub fn new(tar_contents: Vec<Row<'static>>) -> Self {
+    pub fn new(args: Args) -> Self {
         Self {
             running: true,
-            tar_contents,
+            tar_contents: read_tar_contents(args.tar_file, args.show_indicator).unwrap(),
             table_state: TableState::default(),
         }
     }
@@ -32,7 +34,7 @@ impl App {
         };
         self.table_state.select(Some(previous));
     }
-    
+
     /// Move the selection down in the table.
     pub fn move_down(&mut self) {
         let next = match self.table_state.selected() {
