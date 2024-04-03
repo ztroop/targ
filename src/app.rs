@@ -1,13 +1,17 @@
 use std::error;
 
-use ratatui::widgets::{Row, TableState};
+use ratatui::widgets::TableState;
 
-use crate::{structs::Args, tar::read_tar_contents};
+use crate::{
+    structs::{Args, FileOrDir},
+    tar::read_tar_contents,
+};
 
 pub struct App {
     pub running: bool,
-    pub tar_contents: Vec<Row<'static>>,
+    pub tar_contents: Vec<FileOrDir>,
     pub table_state: TableState,
+    pub current_path: Vec<String>,
 }
 
 impl App {
@@ -17,7 +21,24 @@ impl App {
             running: true,
             tar_contents: read_tar_contents(args.tar_file, args.show_indicator).unwrap(),
             table_state: TableState::default(),
+            current_path: Vec::new(),
         }
+    }
+
+    /// Display the contents of the current path.
+    pub fn display_contents(&self) -> Vec<&FileOrDir> {
+        let current_path_str = self.current_path.join("/");
+
+        self.tar_contents.iter().filter(|item| {
+            match item {
+                FileOrDir::Dir { path, .. } => path.starts_with(&current_path_str),
+                FileOrDir::File { path, .. } => {
+                    let path_parts: Vec<_> = path.rsplitn(2, '/').collect();
+                    let path_up_to_last_slash = path_parts.last().unwrap_or(&"");
+                    current_path_str.ends_with(path_up_to_last_slash)
+                },
+            }
+        }).collect()
     }
 
     /// Move the selection up in the table.

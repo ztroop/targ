@@ -5,15 +5,18 @@ use std::{
     time::{Duration, SystemTime},
 };
 
+use chrono::offset::Utc;
+use chrono::DateTime;
 use flate2::bufread::GzDecoder;
-use ratatui::widgets::{Cell, Row};
 use tar::Archive;
+
+use crate::structs::FileOrDir;
 
 /// Read the contents of a tar file and return a vector of rows.
 pub fn read_tar_contents<P: AsRef<Path>>(
     tar_path: P,
     show_indicator: bool,
-) -> io::Result<Vec<Row<'static>>> {
+) -> io::Result<Vec<FileOrDir>> {
     let file = File::open(tar_path.as_ref())?;
     let buf_reader = BufReader::new(file);
 
@@ -45,27 +48,29 @@ pub fn read_tar_contents<P: AsRef<Path>>(
         let size = entry.header().size()?;
 
         let path_str = path.to_str().unwrap().to_string();
-        let size_str = format!("{} bytes", size);
         let modified_time = entry
             .header()
             .mtime()
             .map(|t| SystemTime::UNIX_EPOCH + Duration::new(t, 0))
             .unwrap();
-        let modified_time_epoch = modified_time
-            .duration_since(SystemTime::UNIX_EPOCH)
-            .unwrap()
-            .as_secs();
         // Convert the modified time to a human readable format that is ISO 8601 compliant
-        let modified_time_str = chrono::DateTime::from_timestamp(modified_time_epoch as i64, 0)
-            .unwrap()
-            .format("%Y-%m-%d %H:%M:%S")
-            .to_string();
+        let modified = DateTime::<Utc>::from(modified_time);
 
-        entries.push(Row::new(vec![
-            Cell::from(path_str),
-            Cell::from(size_str),
-            Cell::from(modified_time_str),
-        ]));
+        match entry.header().entry_type() {
+            tar::EntryType::Directory => {
+                entries.push(FileOrDir::Dir {
+                    path: path_str,
+                    expanded: false,
+                });
+            }
+            _ => {
+                entries.push(FileOrDir::File {
+                    path: path_str,
+                    size: size,
+                    modified,
+                });
+            }
+        }
     }
 
     Ok(entries)
