@@ -8,9 +8,9 @@ pub fn handle_key_events(
     app: &mut App,
 ) -> Result<(), Box<dyn std::error::Error>> {
     match key_event.code {
-        KeyCode::Char('q') => {
-            app.quit();
-        }
+        KeyCode::Char('q') => app.quit(),
+        KeyCode::Up | KeyCode::Char('k') => app.move_up(),
+        KeyCode::Down | KeyCode::Char('j') => app.move_down(),
         _ => {}
     }
     Ok(())

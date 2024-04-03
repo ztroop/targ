@@ -31,6 +31,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let tar_contents = read_tar_contents(tar_file_path).unwrap();
 
     let mut app = App::new(tar_contents);
+    app.table_state.select(Some(0));
     while app.running {
         tui.draw(&mut app)?;
         match tui.events.next()? {

@@ -17,7 +17,7 @@ pub struct Tui<B: Backend> {
 }
 
 impl<B: Backend> Tui<B> {
-    /// Constructs a new instance of [`Tui`].
+    /// Create a new terminal user interface.
     pub fn new(terminal: Terminal<B>, events: EventHandler) -> Self {
         Self { terminal, events }
     }
@@ -39,7 +39,7 @@ impl<B: Backend> Tui<B> {
         Ok(())
     }
 
-    /// [`Draw`] the terminal interface by [`rendering`] the widgets.
+    /// Draws the terminal interface.
     pub fn draw(&mut self, app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
         self.terminal.draw(|frame| ui::render(app, frame))?;
         Ok(())

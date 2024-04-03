@@ -9,6 +9,7 @@ use flate2::bufread::GzDecoder;
 use ratatui::widgets::{Cell, Row};
 use tar::Archive;
 
+/// Read the contents of a tar file and return a vector of rows.
 pub fn read_tar_contents<P: AsRef<Path>>(tar_path: P) -> io::Result<Vec<Row<'static>>> {
     let file = File::open(tar_path.as_ref())?;
     let buf_reader = BufReader::new(file);

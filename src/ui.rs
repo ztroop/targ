@@ -7,6 +7,7 @@ use ratatui::{
 
 use crate::app::App;
 
+/// Render the UI.
 pub fn render(app: &mut App, frame: &mut Frame) {
     let table = Table::new(
         app.tar_contents.clone(),
@@ -24,5 +25,5 @@ pub fn render(app: &mut App, frame: &mut Frame) {
     .highlight_style(Style::default().add_modifier(Modifier::BOLD));
 
     let size = frame.size();
-    frame.render_widget(table, size);
+    frame.render_stateful_widget(table, size, &mut app.table_state);
 }
