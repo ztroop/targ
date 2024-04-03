@@ -9,3 +9,4 @@ crossterm = "0.22"
 tar = "0.4"
 flate2 = "1.0"
 chrono = "0.4"
+clap = { version = "4", features = ["derive", "cargo"] }
