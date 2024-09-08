@@ -27,18 +27,30 @@ impl App {
 
     /// Display the contents of the current path.
     pub fn display_contents(&self) -> Vec<&FileOrDir> {
-        let current_path_str = self.current_path.join("/");
+        let current_path_str = if self.current_path.is_empty() {
+            String::new()
+        } else {
+            self.current_path.join("/") + "/"
+        };
 
-        self.tar_contents.iter().filter(|item| {
-            match item {
-                FileOrDir::Dir { path, .. } => path.starts_with(&current_path_str),
-                FileOrDir::File { path, .. } => {
-                    let path_parts: Vec<_> = path.rsplitn(2, '/').collect();
-                    let path_up_to_last_slash = path_parts.last().unwrap_or(&"");
-                    current_path_str.ends_with(path_up_to_last_slash)
-                },
-            }
-        }).collect()
+        self.tar_contents
+            .iter()
+            .filter(|item| {
+                let item_path = match item {
+                    FileOrDir::Dir { path, .. } | FileOrDir::File { path, .. } => path,
+                };
+
+                if item_path.starts_with(&current_path_str) {
+                    let relative_path = item_path.trim_start_matches(&current_path_str);
+                    let is_direct_child = relative_path.matches('/').count() == 0
+                        || (relative_path.matches('/').count() == 1
+                            && relative_path.ends_with('/'));
+                    is_direct_child
+                } else {
+                    false
+                }
+            })
+            .collect()
     }
 
     /// Move the selection up in the table.

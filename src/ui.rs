@@ -61,10 +61,18 @@ pub fn render(app: &mut App, frame: &mut Frame) {
     let hint_rows = vec![Row::new(vec![
         "[q → exit]".to_string(),
         "[up/down → navigate]".to_string(),
+        "[b → back]".to_string(),
     ])
     .style(Style::default().fg(Color::DarkGray))];
-    let hint_table =
-        Table::new(hint_rows, [Constraint::Length(10), Constraint::Length(20)]).column_spacing(1);
+    let hint_table = Table::new(
+        hint_rows,
+        [
+            Constraint::Length(10),
+            Constraint::Length(20),
+            Constraint::Length(10),
+        ],
+    )
+    .column_spacing(1);
 
     frame.render_widget(hint_table, chunks[1])
 }

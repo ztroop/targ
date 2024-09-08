@@ -11,7 +11,7 @@ pub fn handle_key_events(
         KeyCode::Char('q') => app.quit(),
         KeyCode::Up | KeyCode::Char('k') => app.move_up(),
         KeyCode::Down | KeyCode::Char('j') => app.move_down(),
-        KeyCode::Char('b') => {
+        KeyCode::Backspace | KeyCode::Char('b') => {
             app.current_path.pop();
         }
         KeyCode::Enter => {
