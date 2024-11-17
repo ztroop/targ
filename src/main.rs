@@ -35,6 +35,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             Event::Key(key_event) => handle_key_events(key_event, &mut app)?,
             Event::Resize(_, _) => {}
             Event::Mouse(_) => {}
+            Event::FocusLost => {}
+            Event::FocusGained => {}
+            Event::Paste(_) => {}
         }
     }
 

@@ -3,12 +3,15 @@ use std::sync::mpsc;
 use std::thread;
 use std::time::{Duration, Instant};
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Debug)]
 pub enum Event {
     Tick,
     Key(KeyEvent),
     Mouse(MouseEvent),
     Resize(u16, u16),
+    FocusLost,
+    FocusGained,
+    Paste(String),
 }
 
 #[allow(dead_code)]
@@ -37,6 +40,9 @@ impl EventHandler {
                             CEvent::Key(e) => sender.send(Event::Key(e)),
                             CEvent::Mouse(e) => sender.send(Event::Mouse(e)),
                             CEvent::Resize(w, h) => sender.send(Event::Resize(w, h)),
+                            CEvent::FocusLost => sender.send(Event::FocusLost),
+                            CEvent::FocusGained => sender.send(Event::FocusGained),
+                            CEvent::Paste(content) => sender.send(Event::Paste(content)),
                         }
                         .expect("Failed to send terminal event")
                     }
