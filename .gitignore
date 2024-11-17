@@ -3,3 +3,4 @@
 *.tar
 .DS_Store
 /examples
+targ_debug.log

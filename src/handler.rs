@@ -1,8 +1,7 @@
 use crossterm::event::{KeyCode, KeyEvent};
 
-use crate::{app::App, structs::FileOrDir};
+use crate::app::App;
 
-/// Handle key events and update the app state accordingly.
 pub fn handle_key_events(
     key_event: KeyEvent,
     app: &mut App,
@@ -11,20 +10,8 @@ pub fn handle_key_events(
         KeyCode::Char('q') => app.quit(),
         KeyCode::Up | KeyCode::Char('k') => app.move_up(),
         KeyCode::Down | KeyCode::Char('j') => app.move_down(),
-        KeyCode::Backspace | KeyCode::Char('b') => {
-            app.current_path.pop();
-        }
-        KeyCode::Enter => {
-            if let Some(selected) = app.table_state.selected() {
-                let contents = app.display_contents();
-                if let Some(FileOrDir::Dir { path, .. }) = contents.get(selected).map(|d| *d) {
-                    let path_segments: Vec<&str> = path.split('/').collect();
-                    if let Some(dir_name) = path_segments.last() {
-                        app.current_path.push(dir_name.to_string());
-                    }
-                }
-            }
-        }
+        KeyCode::Enter | KeyCode::Right => app.enter_directory(),
+        KeyCode::Backspace | KeyCode::Left => app.go_back(),
         _ => {}
     }
     Ok(())

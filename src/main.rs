@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use std::io;
 
 use app::App;
@@ -8,6 +9,7 @@ use ratatui::{backend::CrosstermBackend, Terminal};
 use tui::Tui;
 
 mod app;
+mod debug;
 mod event;
 mod handler;
 mod structs;

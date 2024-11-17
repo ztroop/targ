@@ -1,4 +1,5 @@
 use std::{
+    collections::HashMap,
     fs::File,
     io::{self, BufReader, Read},
     path::Path,
@@ -12,7 +13,6 @@ use tar::Archive;
 
 use crate::structs::FileOrDir;
 
-/// Read the contents of a tar file and return a vector of rows.
 pub fn read_tar_contents<P: AsRef<Path>>(
     tar_path: P,
     show_indicator: bool,
@@ -28,15 +28,14 @@ pub fn read_tar_contents<P: AsRef<Path>>(
     };
 
     let mut archive = Archive::new(tar);
-    let mut entries = Vec::new();
+    let mut dir_map: HashMap<String, Vec<FileOrDir>> = HashMap::new();
 
     for entry in archive.entries()? {
         let entry = entry?;
+        let path = entry.path()?;
 
-        // Skip indicator files if they are not requested
         if !show_indicator
-            && entry
-                .path()?
+            && path
                 .file_name()
                 .and_then(|s| s.to_str())
                 .map_or(false, |s| s.starts_with("._"))
@@ -44,34 +43,66 @@ pub fn read_tar_contents<P: AsRef<Path>>(
             continue;
         }
 
-        let path = entry.path()?.to_path_buf();
-        let size = entry.header().size()?;
-
         let path_str = path.to_str().unwrap().to_string();
+        let clean_path = path_str.trim_end_matches('/').to_string();
+        let parent = Path::new(&clean_path)
+            .parent()
+            .and_then(|p| p.to_str())
+            .unwrap_or("")
+            .to_string();
+
+        let size = entry.header().size()?;
         let modified_time = entry
             .header()
             .mtime()
             .map(|t| SystemTime::UNIX_EPOCH + Duration::new(t, 0))
             .unwrap();
-        // Convert the modified time to a human readable format that is ISO 8601 compliant
         let modified = DateTime::<Utc>::from(modified_time);
 
-        match entry.header().entry_type() {
-            tar::EntryType::Directory => {
-                entries.push(FileOrDir::Dir {
-                    path: path_str,
-                    expanded: false,
-                });
+        let file_or_dir = match entry.header().entry_type() {
+            tar::EntryType::Directory => FileOrDir::Dir {
+                path: clean_path,
+                expanded: false,
+                children: Vec::new(),
+            },
+            _ => FileOrDir::File {
+                path: clean_path,
+                size,
+                modified,
+            },
+        };
+
+        dir_map.entry(parent).or_default().push(file_or_dir);
+    }
+
+    fn build_tree(path: &str, dir_map: &HashMap<String, Vec<FileOrDir>>) -> Vec<FileOrDir> {
+        let normalized_path = path.trim_end_matches('/');
+
+        match dir_map.get(normalized_path) {
+            Some(entries) => {
+                let mut result = Vec::new();
+
+                for entry in entries {
+                    match entry {
+                        FileOrDir::Dir { path: dir_path, .. } => {
+                            let children = build_tree(dir_path, dir_map);
+                            result.push(FileOrDir::Dir {
+                                path: dir_path.clone(),
+                                expanded: false,
+                                children,
+                            });
+                        }
+                        FileOrDir::File { .. } => {
+                            result.push(entry.clone());
+                        }
+                    }
+                }
+                result
             }
-            _ => {
-                entries.push(FileOrDir::File {
-                    path: path_str,
-                    size: size,
-                    modified,
-                });
-            }
+            None => Vec::new(),
         }
     }
 
-    Ok(entries)
+    let result = build_tree("", &dir_map);
+    Ok(result)
 }

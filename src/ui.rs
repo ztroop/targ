@@ -8,7 +8,6 @@ use ratatui::{
 
 use crate::{app::App, structs::FileOrDir};
 
-/// Render the UI.
 pub fn render(app: &mut App, frame: &mut Frame) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
@@ -59,20 +58,10 @@ pub fn render(app: &mut App, frame: &mut Frame) {
     frame.render_stateful_widget(table, chunks[0], &mut app.table_state);
 
     let hint_rows = vec![Row::new(vec![
-        "[q → exit]".to_string(),
-        "[up/down → navigate]".to_string(),
-        "[b → back]".to_string(),
+        "[q: quit] [↑/k: up] [↓/j: down] [→/enter: open] [←/backspace: back]".to_string(),
     ])
     .style(Style::default().fg(Color::DarkGray))];
-    let hint_table = Table::new(
-        hint_rows,
-        [
-            Constraint::Length(10),
-            Constraint::Length(20),
-            Constraint::Length(10),
-        ],
-    )
-    .column_spacing(1);
+    let hint_table = Table::new(hint_rows, [Constraint::Percentage(100)]).column_spacing(1);
 
     frame.render_widget(hint_table, chunks[1])
 }
