@@ -1,7 +1,5 @@
 # targ
 
-![demo](./assets/demo.png)
-
 ## Summary
 
 A very basic TUI application designed to explore TAR and GZIP-compressed TAR files.
@@ -19,3 +17,7 @@ Options:
   -h, --help                 Print help
   -V, --version              Print version
 ```
+
+## Demonstration
+
+![demo](./assets/demo.png)
