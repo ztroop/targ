@@ -13,7 +13,7 @@ pub fn render(app: &mut App, frame: &mut Frame) {
         .direction(Direction::Vertical)
         .margin(1)
         .constraints([Constraint::Percentage(90), Constraint::Percentage(10)].as_ref())
-        .split(frame.size());
+        .split(frame.area());
 
     let contents: Vec<Row<'static>> = app
         .display_contents()
