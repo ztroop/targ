@@ -84,13 +84,17 @@ impl App {
             let contents = self.display_contents();
             if selected < contents.len() {
                 if let FileOrDir::Dir { path, .. } = contents[selected] {
-                    debug_log(&format!("Entering directory: {}", path));
+                    if self.debug {
+                        debug_log(&format!("Selected directory: {}", path));
+                    }
                     let components: Vec<String> = path
                         .trim_end_matches('/')
                         .split('/')
                         .map(String::from)
                         .collect();
-                    debug_log(&format!("New path components: {:?}", components));
+                    if self.debug {
+                        debug_log(&format!("New path components: {:?}", components));
+                    }
                     self.current_path = components;
                     self.table_state.select(Some(0));
                 }
